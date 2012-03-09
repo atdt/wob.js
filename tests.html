@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>wob.js test suite</title>
+  <link rel=stylesheet href=qunit/qunit.css>
+  <script src=qunit/jquery.js></script>
+	<script src=qunit/qunit.js></script>
+  <script>
+    wobtest = true;
+  </script>
+  <script src=wob.js></script>
+  <script>
+
+    test('format', function () {
+      equal(format('foo%sbar', 123), 'foo123bar');
+    });
+
+    asyncTest('urlref', 2, function () {
+      var ref = urlref.assign('foo');
+      ok(ref.indexOf('blob:') !== -1);
+      $.get(ref, function (data) {
+        start();
+        equal(data, 'foo');
+        urlref.revoke(ref);
+      });
+    });
+
+    asyncTest('wob', function () {
+      var sum = wob(function (a, b) {
+        return a + b;
+      });
+      sum(3, 4, function(val) {
+        start();
+        equal(val, 7);
+      });
+    });
+
+    asyncTest('queueing', 100, function () {
+      var f = wob(function (a) {
+        return a;
+      });
+      for (var i = 0; i < 100; i++) {
+        (function () {
+          var expected = i;
+          f(expected, function(val) {
+            start();
+            equal(val, expected);
+          });
+        }());
+      }
+    });
+
+  </script>
+</head>
+<body>
+	<div id=qunit></div>
+	<div id=qunit-fixture>test markup</div>
+</body>
+</html>
